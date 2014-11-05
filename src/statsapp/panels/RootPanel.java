@@ -91,6 +91,10 @@ public class RootPanel extends GridPane
                     
 					areaManager.addTableDataToAreaObjects();
 
+					areaManager.sliceObjectsArea();
+
+					areaManager.printAreaObjects();
+
                     add(dataTable, 0, 1);
                 }               
             }

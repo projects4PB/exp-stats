@@ -10,6 +10,9 @@ public class AreaObject
 	// wektor zmiennych objasniajacych
 	private ArrayList<Float> vars;
 	
+	// wektor binarny przypisany do obiektu
+	private ArrayList<Boolean> binaryVector;
+
 	// klasa obiektu
 	private String objectClass;
 
@@ -36,5 +39,12 @@ public class AreaObject
 	public void setAreaObjectClass(String objClass)
 	{
 		this.objectClass = objClass;
+	}
+
+	@Override
+	public String toString()
+	{
+		return "\nObiekt: " + this.vars.toString()
+			+ " klasa: " + objectClass + "\n";
 	}
 }
