@@ -1,26 +1,18 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-
 package statsapp.savers;
 
 import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
-import java.util.ArrayList;
-import java.util.HashMap;
+
 import statsapp.data.RecordData;
 import statsapp.data.TableData;
 import statsapp.data.records.TableRecord;
 import statsapp.managers.DataManager;
-import statsapp.tables.DataTable;
 
 /**
  *
- * @author admin
+ * @author Adrian Olszewski, Dariusz Obuchowski
  */
 public class DataSaver {
     

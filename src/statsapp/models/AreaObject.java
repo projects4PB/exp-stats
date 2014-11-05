@@ -13,9 +13,6 @@ public class AreaObject
 	// klasa obiektu
 	private String objectClass;
 
-	// zbior obiektu
-	private ObjectsSet objectSet;
-
 	public AreaObject(ArrayList<Float> vars)
 	{
 		this.vars = vars;
@@ -34,15 +31,5 @@ public class AreaObject
 	public void setAreaObjectClass(String objClass)
 	{
 		this.objectClass = objClass;
-	}
-	
-	public ObjectsSet getAreaObjectSet()
-	{
-		return this.objectSet;
-	}
-
-	public void setAreaObjectSet(ObjectsSet objSet)
-	{
-		this.objectSet = objSet;
 	}
 }

@@ -19,7 +19,10 @@ public class TextFileLoader implements Loader
     private int classColumnIndex = -1;
     
     @Override
-    public TableData loadData(String filePath, boolean loadClassAttr, String columnName)
+    public TableData loadData(String filePath,
+			boolean hasColumnsHeader,
+			boolean loadClassFlag,
+			String classColumnName)
     {
         TableData tableData = new TableData();
         
@@ -45,28 +48,36 @@ public class TextFileLoader implements Loader
                 fileLine = buffReader.readLine();
             }
             
-			String[] firstLine = this.splitValues(fileLine, loadClassAttr);                    
-            		
-            String[] colNames = new String[firstLine.length];
-            //String[] colNames = this.splitValues(fileLine, loadClassAttr);
+			String[] colNames;
 
-            for(int i = 0; i < firstLine.length; i++)
-            {                
-                colNames[i] = "attr" + (i + 1);
-            }
-			
-            RecordData recData = new RecordData(
-                            this.parseData(colNames, firstLine)
-            );
-            tableData.addRecord(recData);
-            
+			if(hasColumnsHeader)
+			{
+				colNames = this.splitValues(fileLine, loadClassFlag);
+			}
+			else 
+			{
+				String[] firstLine = this.splitValues(fileLine, loadClassFlag);                    
+						
+				colNames = new String[firstLine.length];
+
+				for(int i = 0; i < firstLine.length - 1; i++)
+				{                
+					colNames[i] = "attr" + (i + 1);
+				}
+				colNames[firstLine.length - 1] = "class";
+				
+				RecordData recData = new RecordData(
+						this.parseData(colNames, firstLine)
+				);
+				tableData.addRecord(recData);
+			}
             tableData.setColumnsNames(colNames);
             
             while((fileLine = buffReader.readLine()) != null)
             {
                 if(fileLine.trim().startsWith("#")) continue;
                 
-                String[] splittedValues = this.splitValues(fileLine, loadClassAttr);
+                String[] splittedValues = this.splitValues(fileLine, loadClassFlag);
                                               
                 RecordData recordData = new RecordData(
                         this.parseData(colNames, splittedValues)
@@ -89,26 +100,25 @@ public class TextFileLoader implements Loader
         return tableData;
     }
     
-    private String[] splitValues(String fileLine, boolean dropLastColumn)
+    private String[] splitValues(String fileLine, boolean loadClassFlag)
     {
-        if(dropLastColumn == false)
+        if(loadClassFlag == true)
         {
             return fileLine.split("\\s+");
         }
         
-        String [] SplitValues = fileLine.split("\\s+");
-        String [] SplitValues_pom = new String [SplitValues.length -1];
+        String [] splitValues = fileLine.split("\\s+");
+        String [] cuttedValues = new String [splitValues.length -1];
 
-        for(int i = 0 ; i < SplitValues.length -1; i++)
+        for(int i = 0 ; i < splitValues.length -1; i++)
         {
-            SplitValues_pom[i] = SplitValues[i];              
+            cuttedValues[i] = splitValues[i];              
         }
-
-        return SplitValues_pom;                    
+        return cuttedValues;                    
     }
     
     private HashMap<String, Object> parseData(
-            String[] colNames, String[] values)
+			String[] colNames, String[] values)
     {
         if(colNames.length != values.length) return null;
         

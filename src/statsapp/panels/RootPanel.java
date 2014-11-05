@@ -12,18 +12,12 @@ import javafx.stage.FileChooser;
 import javafx.stage.Stage;
 
 import statsapp.data.TableData;
-import statsapp.loaders.ExcelFileLoader;
+import statsapp.loaders.CSVFileLoader;
 import statsapp.loaders.TextFileLoader;
 import statsapp.managers.AreaManager;
 import statsapp.managers.DataManager;
 import statsapp.popups.ChartPopup;
-import statsapp.popups.ClassifyQuantityPopup;
 import statsapp.popups.CreateObjectPopup;
-import statsapp.popups.DiscretizationPopup;
-import statsapp.popups.GroupingPopup;
-import statsapp.popups.NormalizationPopup;
-import statsapp.popups.StandarizationPopup;
-import statsapp.popups.StatisticsPopup;
 import statsapp.savers.DataSaver;
 import statsapp.tables.DataTable;
 
@@ -40,8 +34,10 @@ public class RootPanel extends GridPane
     public RootPanel()
     {
         MenuBar menuBar = this.createMenuBar();
-        this.panelInstance = this;
-        this.add(menuBar, 0, 0);
+        
+		panelInstance = this;
+        
+		this.add(menuBar, 0, 0);
     }
     
     private MenuBar createMenuBar()
@@ -76,7 +72,7 @@ public class RootPanel extends GridPane
 							|| extension.equals("xls"))
 						{
 							DataManager.setDataLoader(
-									new ExcelFileLoader()
+									new CSVFileLoader()
 							);
 						}
 						else
@@ -87,30 +83,19 @@ public class RootPanel extends GridPane
 						}
                     }
 					TableData tableData = DataManager
-						.getInstance().loadData(
-							file.getAbsolutePath(), false,""
+						.getInstance().loadData(file.getAbsolutePath(),
+								false, true, "class"
 					);
                     DataTable dataTable = dManager
                             .createDataTable(tableData);
                     
-					//areaManager.addTableDataToAreaObjects();
+					areaManager.addTableDataToAreaObjects();
 
                     add(dataTable, 0, 1);
                 }               
             }
         });
         
-        MenuItem loadDataSet = new MenuItem("Załaduj zbiór danych");
-        loadDataSet.setOnAction(new EventHandler<ActionEvent>()
-        {
-            @Override
-            public void handle(ActionEvent e)
-            {
-                GroupingPopup popup = new GroupingPopup();
-                popup.show(getScene().getWindow());
-            }
-        });
-
         MenuItem save = new MenuItem("Zapisz");
         final Stage primaryStage = null;
         final DataSaver dataSaver = new DataSaver();
@@ -139,7 +124,7 @@ public class RootPanel extends GridPane
             }
         });
         
-        fileMenu.getItems().addAll(loadData, loadDataSet, save, exit);
+        fileMenu.getItems().addAll(loadData, save, exit);
         
         Menu editMenu = new Menu("Edycja");
         
@@ -156,19 +141,6 @@ public class RootPanel extends GridPane
             }
         });
 
-        MenuItem discretization = new MenuItem("Dyskretyzacja");
-        discretization.setOnAction(new EventHandler<ActionEvent>()
-        {
-            @Override
-            public void handle(ActionEvent e)
-            {
-                DiscretizationPopup popup =
-                        new DiscretizationPopup();
-
-                popup.show(getScene().getWindow());
-            }
-        });
-        
 		MenuItem chart2D = new MenuItem("Wykres 2D");
         chart2D.setOnAction(new EventHandler<ActionEvent>()
         {
@@ -181,63 +153,9 @@ public class RootPanel extends GridPane
             }
         });
         
-        MenuItem standarization = new MenuItem("Standaryzacja");
-        standarization.setOnAction(new EventHandler<ActionEvent>()
-        {
-            @Override
-            public void handle(ActionEvent e)
-            {
-                StandarizationPopup popup = new StandarizationPopup();
-
-                popup.show(getScene().getWindow());
-            }
-        });
-        
-        MenuItem classifyQuantity = new MenuItem("Jakość klasyfikacji");
-        classifyQuantity.setOnAction(new EventHandler<ActionEvent>()
-        {
-            @Override
-            public void handle(ActionEvent e)
-            {
-                ClassifyQuantityPopup popup = new ClassifyQuantityPopup();
-
-                popup.show(getScene().getWindow());
-            }
-        });
-          
-        MenuItem normalization = new MenuItem("Normalizacja");
-        normalization.setOnAction(new EventHandler<ActionEvent>()
-        {
-            @Override
-            public void handle(ActionEvent e)
-            {
-                NormalizationPopup popup = new NormalizationPopup();
-
-                popup.show(getScene().getWindow());
-            }
-        });
-
-        MenuItem statistics = new MenuItem("Statystyki");
-        statistics.setOnAction(new EventHandler<ActionEvent>()
-        {
-            @Override
-            public void handle(ActionEvent e)
-            {
-                StatisticsPopup popup =
-                        new StatisticsPopup();
-
-                popup.show(getScene().getWindow());
-            }
-        });
-        
         editMenu.getItems().addAll(
 				createObject,
-				chart2D,
-                discretization,
-                statistics,
-                standarization,
-                normalization,
-                classifyQuantity
+				chart2D
                 );
         
         menuBar.getMenus().addAll(fileMenu, editMenu);
