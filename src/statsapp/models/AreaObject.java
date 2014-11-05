@@ -18,6 +18,11 @@ public class AreaObject
 		this.vars = vars;
 	}
 
+	public Float getVar(int varIndex)
+	{
+		return this.vars.get(varIndex);
+	}
+
 	public ArrayList<Float> getVars()
 	{
 		return this.vars;
