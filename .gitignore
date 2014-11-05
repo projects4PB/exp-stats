@@ -1,0 +1,13 @@
+build.xml
+.classpath
+.project
+.settings/
+build.fxbuild
+manifest.mf
+/nbproject/
+/build/
+/dist/
+/test/
+/bin
+*.swp
+*.swo
