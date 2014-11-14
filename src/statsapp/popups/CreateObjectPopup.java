@@ -72,11 +72,6 @@ public class CreateObjectPopup extends BasePopup
 
         contentPane.add(titleLabel, 0, 0, 2, 1);
         contentPane.add(scrollPane, 0, 1,2,1);
-        Label metricType = new Label("Metryka:");
-
-        metricType.setPrefSize(200, 25);
-
-        contentPane.add(metricType, 0, 3);
 
         Button okButton = new Button("Dodaj");
         okButton.setOnAction(new EventHandler<ActionEvent>()

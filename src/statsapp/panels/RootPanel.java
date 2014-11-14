@@ -68,18 +68,13 @@ public class RootPanel extends GridPane
                         String extension = file.getAbsolutePath()
 								.substring(index + 1);
 						
-						if(extension.equals("xlsx")
-							|| extension.equals("xls"))
+						if(extension.equals("csv"))
 						{
-							DataManager.setDataLoader(
-									new CSVFileLoader()
-							);
+							DataManager.setDataLoader(new CSVFileLoader());
 						}
 						else
 						{
-							DataManager.setDataLoader(
-									new TextFileLoader()
-							);
+							DataManager.setDataLoader(new TextFileLoader());
 						}
                     }
 					TableData tableData = DataManager
