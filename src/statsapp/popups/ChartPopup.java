@@ -17,14 +17,17 @@ import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
-
 import statsapp.data.RecordData;
 import statsapp.data.records.TableRecord;
+import statsapp.managers.AreaManager;
 import statsapp.managers.DataManager;
+import statsapp.models.AreaObject;
 
 public class ChartPopup extends BasePopup
 {
 	private DataManager dManager = DataManager.getInstance();
+	
+	private AreaManager aManager = AreaManager.getInstance();
 
 	// Pierwsza zmienna
 	private static String FIRST_COLUMN = "";
@@ -127,7 +130,7 @@ public class ChartPopup extends BasePopup
 		);
 	}
 
-	private ScatterChart createChart()
+/*	private ScatterChart createChart()
 	{
 		if(FIRST_COLUMN.equals("") ||
 				SECOND_COLUMN.equals(""))
@@ -213,6 +216,79 @@ public class ChartPopup extends BasePopup
 			series.getData().add(new XYChart.Data(
 				recordData.getFields().get(FIRST_COLUMN),
 				recordData.getFields().get(SECOND_COLUMN)
+			));
+		}
+		for(XYChart.Series series : dataSeries.values())
+		{
+			sChart.getData().add(series);
+		}
+		return sChart;
+	} */
+	private ScatterChart createChart()
+	{
+		if(FIRST_COLUMN.equals("") ||
+				SECOND_COLUMN.equals(""))
+		{
+			ScatterChart<Number, Number> sChart = new
+				ScatterChart<Number, Number>(
+						new NumberAxis(),
+						new NumberAxis()
+				);
+			sChart.getStylesheets().add(POPUPS_STYLESHEET);
+			sChart.getStyleClass().add("chart");
+			
+			return sChart;
+		}
+		final NumberAxis xAxis = new NumberAxis();
+
+		final NumberAxis yAxis = new NumberAxis();
+        
+        final ScatterChart<Number, Number> sChart = new
+            ScatterChart<Number, Number>(xAxis, yAxis);
+        
+		sChart.getStylesheets().add(POPUPS_STYLESHEET);
+		sChart.getStyleClass().add("chart");
+		
+		xAxis.setLabel(FIRST_COLUMN);                
+        yAxis.setLabel(SECOND_COLUMN);
+
+		ArrayList<String> objsClasses = new ArrayList<>();
+
+		HashMap<String, XYChart.Series> dataSeries = new HashMap<>();
+
+		for(AreaObject obj : aManager.getAreaObjects())
+		{
+			String objectClass = obj.getAreaObjectClass();
+
+			boolean classExits = false;
+
+			for(String objClass : objsClasses)
+			{
+				if(objectClass.equals(objClass))
+				{
+					classExits = true;
+				}
+			}
+			XYChart.Series series;
+			
+			if(classExits)
+			{
+				series = dataSeries.get(objectClass);
+			}
+			else
+			{
+				XYChart.Series newSeries = new XYChart.Series();
+
+				newSeries.setName(objectClass);
+
+				dataSeries.put(objectClass, newSeries);
+
+				objsClasses.add(objectClass);
+				
+				series = newSeries;
+			}
+			series.getData().add(new XYChart.Data(
+				obj.getVar(0), obj.getVar(1)
 			));
 		}
 		for(XYChart.Series series : dataSeries.values())
