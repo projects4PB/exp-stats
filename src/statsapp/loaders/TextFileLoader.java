@@ -16,8 +16,6 @@ import statsapp.data.TableData;
  */
 public class TextFileLoader implements Loader
 {
-    private int classColumnIndex = -1;
-    
     @Override
     public TableData loadData(String filePath,
 			boolean hasColumnsHeader,

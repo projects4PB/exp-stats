@@ -23,8 +23,6 @@ public class AreaManager
 	
 	private HashMap<String, Integer> classObjectsCounts = new HashMap<>();
 	
-	private HashMap<AreaObject, Integer> slidesObjects = new HashMap<>();
-	
 	private final int DIR_LT = 0;
 	
 	private final int DIR_GT = 1;
@@ -80,6 +78,20 @@ public class AreaManager
 
 	public ArrayList<AreaObject> getAreaObjects()
 	{
+		ArrayList<AreaObject> resultList = new ArrayList<>();
+		
+		for(AreaObject obj : this.areaObjects)
+		{
+			if(obj.getStatus() == AreaObject.STATUS_EXISTING)
+			{
+				resultList.add(obj);
+			}
+		}
+		return resultList;
+	}
+	
+	public ArrayList<AreaObject> getAllAreaObjects()
+	{
 		return this.areaObjects;
 	}
 
@@ -122,7 +134,7 @@ public class AreaManager
 		}
 	}
         
-	private void sortAreaObjectsByVariable(final int varIndex) 
+	private void sortASCAreaObjectsByVariable(final int varIndex) 
 	{ 
 		Collections.sort(this.areaObjects, new Comparator<AreaObject>()
 		{
@@ -133,11 +145,22 @@ public class AreaManager
 		});	
 	}
 	
+	private void sortDSCAreaObjectsByVariable(final int varIndex) 
+	{ 
+		Collections.sort(this.areaObjects, new Comparator<AreaObject>()
+		{
+			public int compare(AreaObject a1, AreaObject a2)
+			{
+				return - a1.getVar(varIndex).compareTo(a2.getVar(varIndex));
+			}
+		});	
+	}
+	
 	private ArrayList<AreaObject> getAreaObjectsForClass(String objClass)
 	{
 		ArrayList<AreaObject> resultList = new ArrayList<>();
 		
-		for(AreaObject areaObj : this.areaObjects)
+		for(AreaObject areaObj : this.getAreaObjects())
 		{
 			if(areaObj.getAreaObjectClass().equals(objClass))
 			{
@@ -151,7 +174,7 @@ public class AreaManager
 	{
 		ArrayList<String> resultList = new ArrayList<>();
 		
-		for(AreaObject areaObj : this.areaObjects)
+		for(AreaObject areaObj : this.getAreaObjects())
 		{
 			if(!resultList.contains(areaObj.getAreaObjectClass()))
 			{
@@ -159,6 +182,32 @@ public class AreaManager
 			}
 		}
 		return resultList;
+	}
+	
+	private boolean iSListHasOnlyTheSomeClasses()
+	{
+		ArrayList<String> classesObj = this.getAreaClasses();
+		
+		String previousClass = "";
+		
+		String nextClass = "";
+		
+		for(int i = 0; i < classesObj.size() ; i++) 
+		{
+			previousClass = classesObj.get(i);
+			
+			if(i + 1 != classesObj.size())
+				nextClass = classesObj.get(i + 1);
+			else
+				nextClass = previousClass;
+			
+			if(!previousClass.equals(nextClass))
+			{
+				return false;
+			}
+		}
+		
+		return true;
 	}
 
 	private int[] countAreaObjects(
@@ -169,7 +218,7 @@ public class AreaManager
 		boolean hasLTOtherClassObj = false;
 		boolean hasGTOtherClassObj = false;
 		
-		for(AreaObject areaObj : this.areaObjects)
+		for(AreaObject areaObj : this.getAreaObjects())
 		{
 			if(areaObj.getVar(varIndex) > dividingValue)
 			{
@@ -219,7 +268,7 @@ public class AreaManager
 	{
 		int[] countAreaOBjects;
 		
-		int varCount = this.areaObjects.get(0).getVars().size();
+		int varCount = this.getAreaObjects().get(0).getVars().size();
 
 		int countRemoveObjects = -1;
 		
@@ -239,19 +288,92 @@ public class AreaManager
 
 		boolean hasOtherClassesOnSlideLine = false;
 		
+		boolean iSListHasOnlyTheSomeClasses = false;
+		
 		int c = 0;
 		
-		while(countRemoveObjects != 0)
+		while(this.getAreaClasses().size() != 0)
 		{
-			if(c == 3) break;
+			iSListHasOnlyTheSomeClasses = this.iSListHasOnlyTheSomeClasses();
+			
+			if(iSListHasOnlyTheSomeClasses)
+			{
+				break;
+			}
 			
 			ArrayList<AreaObject> classObjects = null;
 			
 			for(int i = 0; i < varCount; i++)
 			{
 				varIndex = i;
+
+				this.sortASCAreaObjectsByVariable(varIndex);
 				
-				this.sortAreaObjectsByVariable(varIndex);
+				for(String objClass : this.getAreaClasses())
+				{
+					classObjects = this.getAreaObjectsForClass(objClass);
+				
+					for(AreaObject areaObj : classObjects)
+					{
+						float varValue = areaObj.getVar(varIndex);
+
+						countAreaOBjects = this.countAreaObjects(
+								varIndex, varValue, objClass);
+						
+						if(countAreaOBjects[0] == this.DIR_LT)
+						{
+							maxLTGTObjectCount = countAreaOBjects[2];
+						}
+						else maxLTGTObjectCount = countAreaOBjects[3];
+						
+						if(maxLTGTObjectCount >= slideMaxCount)
+						{
+							hasOtherClassesOnSlideLine =
+									this.hasOtherClassesOnSlide(
+											varValue, objClass, varIndex
+									);
+							
+							if(countAreaOBjects[1] == 1 ||
+									hasOtherClassesOnSlideLine)
+							{
+								slicingDIR = prevSlicingDIR;
+								
+								slideMaxCount = prevMaxLTGTObjectCount;
+								 
+								slicingObj = prevSlicingObj;
+
+								break;
+							}
+							else
+							{
+								slicingDIR = countAreaOBjects[0];
+								
+								slideMaxCount = maxLTGTObjectCount;
+								 
+								slicingObj = areaObj;
+							}	
+							if(areaObj.getVar(varIndex) == classObjects
+									.get(classObjects.size() - 1)
+									.getVar(varIndex))
+							{
+								slicingDIR = countAreaOBjects[0];
+								
+								slideMaxCount = maxLTGTObjectCount;
+								 
+								slicingObj = areaObj;
+							}
+							slideVar = varIndex;
+							
+							prevMaxLTGTObjectCount = maxLTGTObjectCount;
+							
+							prevSlicingDIR = slicingDIR;
+							
+							prevSlicingObj = areaObj;
+						}
+					 }
+				 }
+
+				this.sortDSCAreaObjectsByVariable(varIndex);
 				
 				for(String objClass : this.getAreaClasses())
 				{
@@ -269,13 +391,14 @@ public class AreaManager
 							maxLTGTObjectCount = countAreaOBjects[2];
 						}
 						else maxLTGTObjectCount = countAreaOBjects[3];
-							
+						
 						if(maxLTGTObjectCount >= slideMaxCount)
 						{
 							hasOtherClassesOnSlideLine =
 									this.hasOtherClassesOnSlide(
 											varValue, objClass, varIndex
 									);
+							
 							if(countAreaOBjects[1] == 1 ||
 									hasOtherClassesOnSlideLine)
 							{
@@ -284,9 +407,7 @@ public class AreaManager
 								slideMaxCount = prevMaxLTGTObjectCount;
 								 
 								slicingObj = prevSlicingObj;
-								 
-								slideVar = (varIndex - 1) < 1 ? 0 : (varIndex - 1);
-								
+
 								break;
 							}
 							else
@@ -296,9 +417,19 @@ public class AreaManager
 								slideMaxCount = maxLTGTObjectCount;
 								 
 								slicingObj = areaObj;
-								 
-								slideVar = varIndex;
 							}
+							if(areaObj.getVar(varIndex) == classObjects
+									.get(classObjects.size() - 1)
+									.getVar(varIndex))
+							{								
+								slicingDIR = countAreaOBjects[0];
+								
+								slideMaxCount = maxLTGTObjectCount;
+								 
+								slicingObj = areaObj;
+							}
+							slideVar = varIndex;
+							
 							prevMaxLTGTObjectCount = maxLTGTObjectCount;
 							
 							prevSlicingDIR = slicingDIR;
@@ -307,14 +438,13 @@ public class AreaManager
 						}
 					 }
 				 }
+				prevMaxLTGTObjectCount = 0;
 			}
 			slideMaxCount = 0;
-			
+
 			countRemoveObjects = this.removeSlidesAreaObjects(
 					slicingObj, slideVar, slicingDIR);
-			
-			slidesObjects.put(slicingObj, slideVar);
-			
+						
 			System.out.println("V: " + slideVar + " - " + slicingDIR);
 			System.out.println("C: " + slicingObj.getVar(slideVar));
 			
@@ -329,7 +459,7 @@ public class AreaManager
 		
 		String classareaObj = "";
 				
-		for(AreaObject areaObj : this.areaObjects)
+		for(AreaObject areaObj : this.getAreaObjects())
 		{
 			classareaObj = areaObj.getAreaObjectClass();
 			
@@ -347,15 +477,15 @@ public class AreaManager
 	private int removeSlidesAreaObjects(
 			AreaObject areaObject, int sliderVar, int direction)
 	{		
-		int countRemoveObjects = 0;
+		//int countRemoveObjects = 0;
 		
 		ArrayList<AreaObject> areaObjectsToRemove = new ArrayList<AreaObject>();
 				
 		float valueAreaObject = areaObject.getVar(sliderVar);
 		
 		String classAreaObject = areaObject.getAreaObjectClass();
-				
-		for(AreaObject areaObj : this.areaObjects)
+						
+		for(AreaObject areaObj : this.getAreaObjects())
 		{
 			float valueAreaObj = areaObj.getVar(sliderVar);
 			
@@ -364,7 +494,7 @@ public class AreaManager
 			if(direction == this.DIR_LT)
 			{
 				if(classAreaObject.equals(classAreaObj) 
-						&& valueAreaObject > valueAreaObj )
+						&& valueAreaObject >= valueAreaObj )
 				{	
 					areaObjectsToRemove.add(areaObj);
 				}
@@ -372,25 +502,46 @@ public class AreaManager
 			else
 			{
 				if(classAreaObject.equals(classAreaObj) 
-						&& valueAreaObject < valueAreaObj )
+						&& valueAreaObject <= valueAreaObj )
 				{					
 					areaObjectsToRemove.add(areaObj);
 				}				
 			}			
 		}
+		
+		/*
 		for(AreaObject areaObj : areaObjectsToRemove)
 		{
-			this.removeAreaObject(areaObj);
+			areaObj.setBinaryValue(1);
+			areaObj.setStatus(AreaObject.STATUS_REMOVED);
 			countRemoveObjects++;
 		}
-		return countRemoveObjects;
+		*/
+		
+		System.out.println("weszlo");
+		
+		for(AreaObject areaObj : this.areaObjects)
+		{
+			if(areaObjectsToRemove.contains(areaObj))
+			{
+				areaObj.setStatus(AreaObject.STATUS_REMOVED);
+				areaObj.setBinaryValue(1);
+			}
+			
+			else
+			{
+				areaObj.setBinaryValue(0);
+			}
+		}
+		
+		return areaObjectsToRemove.size();
 	}
 		
 	public void printAreaObjects()
 	{		
 		for(AreaObject areaObj : this.areaObjects)
 		{
-			System.out.println(areaObj);
+			System.out.println(areaObj.getBinaryVector());
 		}
 	}
 }

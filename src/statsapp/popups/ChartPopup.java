@@ -256,7 +256,7 @@ public class ChartPopup extends BasePopup
 
 		HashMap<String, XYChart.Series> dataSeries = new HashMap<>();
 
-		for(AreaObject obj : aManager.getAreaObjects())
+		for(AreaObject obj : aManager.getAllAreaObjects())
 		{
 			String objectClass = obj.getAreaObjectClass();
 
